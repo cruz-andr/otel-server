@@ -1,0 +1,21 @@
+{
+  "manifest_version": "0.2",
+  "name": "otel-server",
+  "version": "1.0.0",
+  "description": "MCP server for Docker container inspection and OpenTelemetry trace querying via Jaeger",
+  "author": {
+    "name": "cruz-andr"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "build/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/build/index.js"
+      ],
+      "env": {}
+    }
+  },
+  "license": "MIT"
+}

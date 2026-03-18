@@ -109,3 +109,7 @@ src/
 **Tools** (`src/tools/`) connect the MCP protocol schemas to the client layer. Each tool is registered independently with the MCP server.
 
 **Formatters** (`src/formatters/`) are pure functions that sanitize, strip, and wrap data for optimal LLM ingestion. The redaction module (`src/redact.ts`) scrubs PII and credentials from all output.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
