@@ -2,7 +2,7 @@
 
 An intelligent Model Context Protocol (MCP) server that gives autonomous AI agents (like Claude) the ability to act as a Site Reliability Engineer (SRE).
 
-This server bridges the gap between static code analysis and runtime observability. It allows LLMs to autonomously discover Docker containers, monitor resource utilization (OOM risks), tail logs, and drill down into OpenTelemetry distributed traces (via Jaeger)—all safely and securely.
+This server bridges the gap between static code analysis and runtime observability. It allows LLMs to autonomously discover Docker containers, monitor resource utilization (OOM risks), tail logs, and drill down into OpenTelemetry distributed traces (via Jaeger), all safely and securely.
 
 ## Key Features
 
