@@ -2,7 +2,7 @@
 # https://smithery.ai
 
 startCommand:
-  type: stdio
+  type: http
   configSchema:
     type: object
     properties:
@@ -38,6 +38,10 @@ startCommand:
         type: string
         default: "true"
         description: "Enable/disable PII scrubbing (set to 'false' to disable)"
+      PORT:
+        type: number
+        default: 3000
+        description: "Port for HTTP transport"
   commandFunction: |-
     (config) => ({
       command: "node",
@@ -50,6 +54,8 @@ startCommand:
         DEFAULT_LOG_LINES: String(config.DEFAULT_LOG_LINES || 100),
         MAX_TRACE_SPANS: String(config.MAX_TRACE_SPANS || 200),
         DEFAULT_LOOKBACK: config.DEFAULT_LOOKBACK || "1h",
-        REDACT_PATTERNS: config.REDACT_PATTERNS || "true"
+        REDACT_PATTERNS: config.REDACT_PATTERNS || "true",
+        TRANSPORT: "http",
+        PORT: String(config.PORT || 3000)
       }
     })

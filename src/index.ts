@@ -1,6 +1,10 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { loadConfig } from './config.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
+import { createServer, IncomingMessage, ServerResponse } from 'node:http';
+import { randomUUID } from 'node:crypto';
+import { loadConfig, Config } from './config.js';
 import { DockerClient } from './clients/docker-client.js';
 import { JaegerClient } from './clients/jaeger-client.js';
 import { registerListContainers } from './tools/list-containers.js';
@@ -10,18 +14,16 @@ import { registerFetchLogs } from './tools/fetch-logs.js';
 import { registerSearchErrorTraces } from './tools/search-error-traces.js';
 import { registerGetTraceTree } from './tools/get-trace-tree.js';
 
-async function main(): Promise<void> {
-  const config = loadConfig();
-
-  const dockerClient = new DockerClient(config.dockerSocketPath);
-  const jaegerClient = new JaegerClient(config.jaegerBaseUrl, config.jaegerTimeoutMs);
-
+function createMcpServer(
+  dockerClient: DockerClient,
+  jaegerClient: JaegerClient,
+  config: Config,
+): McpServer {
   const server = new McpServer({
     name: 'otel-server',
     version: '1.0.0',
   });
 
-  // Register all tools
   registerListContainers(server, dockerClient);
   registerGetContainerStatus(server, dockerClient);
   registerGetContainerStats(server, dockerClient);
@@ -29,7 +31,129 @@ async function main(): Promise<void> {
   registerSearchErrorTraces(server, jaegerClient, config);
   registerGetTraceTree(server, jaegerClient, config);
 
-  // Connect via stdio transport
+  return server;
+}
+
+function readRequestBody(req: IncomingMessage): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    req.on('data', (chunk: Buffer) => chunks.push(chunk));
+    req.on('end', () => resolve(Buffer.concat(chunks).toString()));
+    req.on('error', reject);
+  });
+}
+
+async function startHttpTransport(config: Config): Promise<void> {
+  const dockerClient = new DockerClient(config.dockerSocketPath);
+  const jaegerClient = new JaegerClient(config.jaegerBaseUrl, config.jaegerTimeoutMs);
+
+  const sessions = new Map<string, StreamableHTTPServerTransport>();
+
+  const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+    if (req.url !== '/mcp') {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Not found' }));
+      return;
+    }
+
+    try {
+      if (req.method === 'POST') {
+        const sessionId = req.headers['mcp-session-id'] as string | undefined;
+
+        if (sessionId && sessions.has(sessionId)) {
+          const transport = sessions.get(sessionId)!;
+          await transport.handleRequest(req, res);
+          return;
+        }
+
+        const body = await readRequestBody(req);
+        const message = JSON.parse(body);
+
+        if (isInitializeRequest(message)) {
+          const transport = new StreamableHTTPServerTransport({
+            sessionIdGenerator: () => randomUUID(),
+          });
+
+          transport.onclose = () => {
+            if (transport.sessionId) {
+              sessions.delete(transport.sessionId);
+            }
+          };
+
+          const server = createMcpServer(dockerClient, jaegerClient, config);
+          await server.connect(transport);
+
+          // Re-inject the already-read body so the transport can process it
+          await transport.handleRequest(req, res, message);
+
+          if (transport.sessionId) {
+            sessions.set(transport.sessionId, transport);
+          }
+          return;
+        }
+
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Bad request: missing session ID or not an initialize request' }));
+      } else if (req.method === 'GET') {
+        const sessionId = req.headers['mcp-session-id'] as string | undefined;
+        if (sessionId && sessions.has(sessionId)) {
+          const transport = sessions.get(sessionId)!;
+          await transport.handleRequest(req, res);
+        } else {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid or missing session ID' }));
+        }
+      } else if (req.method === 'DELETE') {
+        const sessionId = req.headers['mcp-session-id'] as string | undefined;
+        if (sessionId && sessions.has(sessionId)) {
+          const transport = sessions.get(sessionId)!;
+          await transport.handleRequest(req, res);
+          sessions.delete(sessionId);
+        } else {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid or missing session ID' }));
+        }
+      } else {
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Method not allowed' }));
+      }
+    } catch (err) {
+      console.error('Error handling request:', err);
+      if (!res.headersSent) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal server error' }));
+      }
+    }
+  });
+
+  httpServer.listen(config.port, () => {
+    console.error(`otel-server MCP server running on http://localhost:${config.port}/mcp`);
+  });
+
+  process.on('SIGINT', async () => {
+    console.error('Shutting down...');
+    for (const transport of sessions.values()) {
+      await transport.close();
+    }
+    sessions.clear();
+    httpServer.close();
+    process.exit(0);
+  });
+}
+
+async function main(): Promise<void> {
+  const config = loadConfig();
+
+  if (config.transport === 'http') {
+    await startHttpTransport(config);
+    return;
+  }
+
+  const dockerClient = new DockerClient(config.dockerSocketPath);
+  const jaegerClient = new JaegerClient(config.jaegerBaseUrl, config.jaegerTimeoutMs);
+
+  const server = createMcpServer(dockerClient, jaegerClient, config);
+
   const transport = new StdioServerTransport();
   await server.connect(transport);
 

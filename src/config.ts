@@ -7,6 +7,8 @@ export interface Config {
   maxTraceSpans: number;
   defaultLookback: string;
   redactPatterns: boolean;
+  transport: 'stdio' | 'http';
+  port: number;
 }
 
 export function loadConfig(): Config {
@@ -19,5 +21,7 @@ export function loadConfig(): Config {
     maxTraceSpans: parseInt(process.env.MAX_TRACE_SPANS ?? '200', 10),
     defaultLookback: process.env.DEFAULT_LOOKBACK ?? '1h',
     redactPatterns: (process.env.REDACT_PATTERNS ?? 'true') !== 'false',
+    transport: (process.env.TRANSPORT === 'http' ? 'http' : 'stdio') as 'stdio' | 'http',
+    port: parseInt(process.env.PORT ?? '3000', 10),
   };
 }
