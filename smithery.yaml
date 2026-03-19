@@ -2,54 +2,5 @@
 # https://smithery.ai
 
 startCommand:
-  type: stdio
-  configSchema:
-    type: object
-    properties:
-      DOCKER_SOCKET_PATH:
-        type: string
-        default: "/var/run/docker.sock"
-        description: "Path to Docker socket"
-      JAEGER_BASE_URL:
-        type: string
-        default: "http://localhost:16686"
-        description: "Jaeger HTTP API URL"
-      JAEGER_TIMEOUT_MS:
-        type: number
-        default: 10000
-        description: "Timeout for Jaeger API requests (ms)"
-      MAX_LOG_LINES:
-        type: number
-        default: 500
-        description: "Maximum number of log lines returned"
-      DEFAULT_LOG_LINES:
-        type: number
-        default: 100
-        description: "Default number of log lines when not specified"
-      MAX_TRACE_SPANS:
-        type: number
-        default: 200
-        description: "Maximum number of spans in a trace tree"
-      DEFAULT_LOOKBACK:
-        type: string
-        default: "1h"
-        description: "Default time window for trace searches"
-      REDACT_PATTERNS:
-        type: string
-        default: "true"
-        description: "Enable/disable PII scrubbing (set to 'false' to disable)"
-  commandFunction: |-
-    (config) => ({
-      command: "node",
-      args: ["build/index.js"],
-      env: {
-        DOCKER_SOCKET_PATH: config.DOCKER_SOCKET_PATH || "/var/run/docker.sock",
-        JAEGER_BASE_URL: config.JAEGER_BASE_URL || "http://localhost:16686",
-        JAEGER_TIMEOUT_MS: String(config.JAEGER_TIMEOUT_MS || 10000),
-        MAX_LOG_LINES: String(config.MAX_LOG_LINES || 500),
-        DEFAULT_LOG_LINES: String(config.DEFAULT_LOG_LINES || 100),
-        MAX_TRACE_SPANS: String(config.MAX_TRACE_SPANS || 200),
-        DEFAULT_LOOKBACK: config.DEFAULT_LOOKBACK || "1h",
-        REDACT_PATTERNS: config.REDACT_PATTERNS || "true"
-      }
-    })
+  type: http
+  url: https://otel-server.fly.dev/mcp

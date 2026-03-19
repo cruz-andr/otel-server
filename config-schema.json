@@ -1,0 +1,45 @@
+{
+  "type": "object",
+  "properties": {
+    "dockerSocketPath": {
+      "type": "string",
+      "default": "/var/run/docker.sock",
+      "description": "Path to Docker socket"
+    },
+    "jaegerBaseUrl": {
+      "type": "string",
+      "default": "http://localhost:16686",
+      "description": "Jaeger HTTP API URL"
+    },
+    "jaegerTimeoutMs": {
+      "type": "number",
+      "default": 10000,
+      "description": "Timeout for Jaeger API requests (ms)"
+    },
+    "maxLogLines": {
+      "type": "number",
+      "default": 500,
+      "description": "Maximum number of log lines returned"
+    },
+    "defaultLogLines": {
+      "type": "number",
+      "default": 100,
+      "description": "Default number of log lines when not specified"
+    },
+    "maxTraceSpans": {
+      "type": "number",
+      "default": 200,
+      "description": "Maximum number of spans in a trace tree"
+    },
+    "defaultLookback": {
+      "type": "string",
+      "default": "1h",
+      "description": "Default time window for trace searches"
+    },
+    "redactPatterns": {
+      "type": "string",
+      "default": "true",
+      "description": "Enable/disable PII scrubbing (set to false to disable)"
+    }
+  }
+}
