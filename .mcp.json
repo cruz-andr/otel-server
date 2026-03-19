@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "otel-server": {
+      "type": "http",
+      "url": "https://otel-server.fly.dev/mcp"
+    }
+  }
+}

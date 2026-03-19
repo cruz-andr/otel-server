@@ -77,6 +77,35 @@ claude mcp add otel-server -- node /absolute/path/to/otel-server/build/index.js
 claude mcp add otel-server --env DOCKER_SOCKET_PATH=unix:///Users/yourname/.orbstack/run/docker.sock -- node /absolute/path/to/otel-server/build/index.js
 ```
 
+## Usage with Claude Code (Hosted Server)
+
+The easiest way to use otel-server is via the hosted instance on Fly.io, no local build required.
+
+**Option 1: CLI command**
+
+```bash
+claude mcp add --transport http otel-server https://otel-server.fly.dev/mcp
+```
+
+**Option 2: Project config file**
+
+Add a `.mcp.json` to your project root:
+
+```json
+{
+  "mcpServers": {
+    "otel-server": {
+      "type": "http",
+      "url": "https://otel-server.fly.dev/mcp"
+    }
+  }
+}
+```
+
+Anyone who clones the repo will auto-connect to the server.
+
+**Optional: Add a `CLAUDE.md`** to your project with tool usage instructions so Claude knows when to reach for observability tools. See this repo's [`CLAUDE.md`](CLAUDE.md) for an example.
+
 ## Architecture
 
 This project uses a strict 3-layer architecture to ensure testability and safety:

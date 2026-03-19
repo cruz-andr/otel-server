@@ -1,7 +1,24 @@
 {
   "name": "otel-server",
   "version": "1.0.0",
-  "description": "MCP server for Docker container inspection and OpenTelemetry trace querying via Jaeger",
+  "description": "MCP server for Docker container monitoring, log tailing, and OpenTelemetry distributed trace analysis via Jaeger — built for Claude Code and AI agents",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "opentelemetry",
+    "otel",
+    "docker",
+    "jaeger",
+    "observability",
+    "sre",
+    "claude",
+    "claude-code",
+    "ai-agent",
+    "distributed-tracing",
+    "container-monitoring",
+    "logs"
+  ],
   "type": "module",
   "main": "build/index.js",
   "scripts": {
