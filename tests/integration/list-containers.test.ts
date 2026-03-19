@@ -10,7 +10,7 @@ describe('list_containers tool', () => {
 
   beforeEach(() => {
     server = {
-      tool: vi.fn((name, _desc, _schema, handler) => {
+      tool: vi.fn((name, _desc, _schema, _annotations, handler) => {
         toolHandler = handler as typeof toolHandler;
       }),
     } as unknown as McpServer;
@@ -23,7 +23,7 @@ describe('list_containers tool', () => {
   });
 
   it('registers the tool', () => {
-    expect(server.tool).toHaveBeenCalledWith('list_containers', expect.any(String), expect.any(Object), expect.any(Function));
+    expect(server.tool).toHaveBeenCalledWith('list_containers', expect.any(String), expect.any(Object), expect.any(Object), expect.any(Function));
   });
 
   it('returns container list wrapped in XML', async () => {

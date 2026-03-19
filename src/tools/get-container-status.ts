@@ -10,6 +10,7 @@ export function registerGetContainerStatus(server: McpServer, dockerClient: Dock
     {
       container_id: z.string().describe('Container ID or name'),
     },
+    { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     async ({ container_id }) => {
       try {
         const status = await dockerClient.getContainerStatus(container_id);

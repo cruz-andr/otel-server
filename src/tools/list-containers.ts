@@ -15,6 +15,7 @@ export function registerListContainers(server: McpServer, dockerClient: DockerCl
         .default('all')
         .describe('Filter by container status'),
     },
+    { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     async ({ name_filter, status }) => {
       try {
         const containers = await dockerClient.listContainers(name_filter, status);

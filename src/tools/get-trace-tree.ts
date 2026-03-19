@@ -31,6 +31,7 @@ export function registerGetTraceTree(
         .default(10)
         .describe('Maximum tree depth to render (max 20)'),
     },
+    { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     async ({ trace_id, max_depth }) => {
       try {
         const trace = await jaegerClient.getTrace(trace_id);

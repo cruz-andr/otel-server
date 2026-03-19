@@ -46,6 +46,7 @@ export function registerSearchErrorTraces(
         .optional()
         .describe('Minimum duration filter (e.g., "100ms", "1s")'),
     },
+    { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     async ({ service, lookback, limit, operation, min_duration }) => {
       try {
         const traces = await jaegerClient.searchErrorTraces({

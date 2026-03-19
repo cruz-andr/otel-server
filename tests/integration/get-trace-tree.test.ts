@@ -13,7 +13,7 @@ describe('get_trace_tree tool', () => {
 
   beforeEach(() => {
     server = {
-      tool: vi.fn((name, _desc, _schema, handler) => {
+      tool: vi.fn((name, _desc, _schema, _annotations, handler) => {
         toolHandler = handler as typeof toolHandler;
       }),
     } as unknown as McpServer;

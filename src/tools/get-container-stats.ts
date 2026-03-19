@@ -18,6 +18,7 @@ export function registerGetContainerStats(server: McpServer, dockerClient: Docke
     {
       container_id: z.string().describe('Container ID or name'),
     },
+    { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     async ({ container_id }) => {
       try {
         const stats = await dockerClient.getContainerStats(container_id);

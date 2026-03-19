@@ -36,6 +36,7 @@ export function registerFetchLogs(
         .optional()
         .describe('Show logs until this time (relative like "15m", "1h", "2d" or Unix timestamp)'),
     },
+    { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     async ({ container_id, lines, grep_pattern, since, until }) => {
       try {
         const tail = Math.min(lines, config.maxLogLines);
